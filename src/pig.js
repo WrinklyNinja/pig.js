@@ -701,6 +701,34 @@
   };
 
   /**
+   * Replace images in the existing image grid with new images.
+   *
+   * This checks if each image's data has changed, and only replaces images that
+   * have had data change. If the number of images has changed, everything gets
+   * replaced.
+   *
+   * @param {array} imageData - An array of metadata about each image to
+   *                            include in the grid.
+   */
+  Pig.prototype.update = function(imageData) {
+    if (imageData.length != this.images.length) {
+      /* Change everything. */
+      this.images.forEach(function(image) {
+        image.hide();
+      });
+
+      this.images = this._parseImageData(imageData);
+    } else {
+      this.images.forEach(function(image, index) {
+        image.update(imageData[index]);
+      });
+    }
+
+    this._computeLayout();
+    this._doLayout();
+  }
+
+  /**
    * This class manages a single image. It keeps track of the image's height,
    * width, and position in the grid. An instance of this class is associated
    * with a single image figure, which looks like this:
@@ -844,6 +872,23 @@
     this.existsOnPage = false;
 
   };
+
+  /**
+   * Update the ProgressiveImage's data using the given data. This function is
+   * also responsible for calling hide() if the filename or aspect ratio have
+   * changed.
+   *
+   * @param {object} singleImageData - The new image data.
+   */
+  ProgressiveImage.prototype.update = function(singleImageData) {
+    if (this.filename !== singleImageData.filename ||
+        this.aspectRatio !== singleImageData.aspectRatio) {
+      this.hide();
+
+      this.aspectRatio = singleImageData.aspectRatio;
+      this.filename = singleImageData.filename;
+    }
+  }
 
   /**
    * Get the DOM element associated with this ProgressiveImage. We default to
